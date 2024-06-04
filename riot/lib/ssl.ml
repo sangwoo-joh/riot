@@ -94,15 +94,11 @@ module Tls_unix = struct
     trace (fun f -> f "tls.read_react");
     let handle tls cs =
       match Tls.Engine.handle_tls tls cs with
-      | Ok (state', `Response resp, `Data data) ->
+      | Ok (state', _eof, `Response resp, `Data data) ->
           trace (fun f -> f "tls.read_react->ok");
           let state' =
             match state' with
-            | `Ok tls -> `Active tls
-            | `Eof -> `Eof
-            | `Alert a ->
-                trace (fun f -> f "tls.read_react->alert");
-                `Error (Tls_alert a)
+            | tls -> `Active tls
           in
           t.state <- state';
           Option.iter (try_write_t t) resp;
